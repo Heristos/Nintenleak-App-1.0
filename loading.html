@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Chargement en cours...</title>
+    <style>
+        body {
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .loader {
+            width: 100px;
+            height: 100px;
+            background-image: url('icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            animation: pulse 3s ease-in-out infinite; /* Augmenter la durée à 3 secondes */
+            transform-origin: center center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Ajout d'une ombre légère */
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.5);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader"></div>
+</body>
+</html>
