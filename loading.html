@@ -11,6 +11,9 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            font-family: Arial, sans-serif;
+            color: #333;
+            text-align: center;
         }
 
         .loader {
@@ -19,7 +22,7 @@
             background-image: url('icon.png');
             background-size: contain;
             background-repeat: no-repeat;
-            animation: pulse 3s ease-in-out infinite; /* Augmenter la durée à 3 secondes */
+            animation: pulse 3s ease-in-out infinite; /* Durée de l'animation augmentée à 3 secondes */
             transform-origin: center center;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Ajout d'une ombre légère */
         }
@@ -32,9 +35,99 @@
                 transform: scale(1.5);
             }
         }
+
+        .system-info {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="loader"></div>
+    <div class="system-info">
+        <h2>Informations système en cours de récupération...</h2>
+        <div id="system-info-container"></div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        // Récupérer les informations système avec Node.js
+        const os = require('os');
+        const network = require('network');
+        const networkInfo = require('network-info');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const systemInfoContainer = document.getElementById('system-info-container');
+            
+            // Fonction pour afficher les informations système
+            function displaySystemInfo() {
+                const systemInfo = {
+                    'Nom de l\'appareil': os.hostname(),
+                    'Processeur': os.cpus()[0].model,
+                    'Mémoire RAM installée': `${(os.totalmem() / (1024 * 1024 * 1024)).toFixed(2)} Go`,
+                    'ID de périphérique': os.userInfo().uid,
+                    'ID de produit': os.userInfo().gid,
+                    'Type du système': os.type(),
+                    'Nombre d\'écrans': screen.getAllDisplays().length,
+                    'Marque écran 1': '', // Vous devrez récupérer cette information spécifiquement
+                    'Marque écran 2': '',
+                    'Marque écran 3': '',
+                    'Résolution écran 1': '',
+                    'Résolution écran 2': '',
+                    'Résolution écran 3': '',
+                    'Hz écran 1': '',
+                    'Hz écran 2': '',
+                    'Hz écran 3': ''
+                };
+
+                // Récupérer les informations réseau
+                network.get_interfaces_list((err, interfaces) => {
+                    if (!err) {
+                        const activeInterfaces = interfaces.filter(intf => intf.operstate === 'up');
+
+                        if (activeInterfaces.length > 0) {
+                            const activeInterface = activeInterfaces[0]; // Utilisation de la première interface active pour obtenir les informations
+                            networkInfo.get_network_info(activeInterface.name, (err, networkInfo) => {
+                                if (!err) {
+                                    systemInfo['IP'] = {
+                                        'Adresse physique': networkInfo.mac_address,
+                                        'DHCP activé': networkInfo.dhcp,
+                                        'Adresse IPv6 de liaison locale': networkInfo.ipv6_address,
+                                        'Adresse IPv4': networkInfo.ip_address,
+                                        'Masque de sous-réseau': networkInfo.netmask,
+                                        'Serveurs DNS': networkInfo.dns_servers.join(', ')
+                                    };
+
+                                    displaySystemInfoOnPage(systemInfo);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            // Fonction pour afficher les informations sur la page HTML
+            function displaySystemInfoOnPage(info) {
+                const infoKeys = Object.keys(info);
+                infoKeys.forEach(key => {
+                    const value = info[key];
+                    if (typeof value === 'object') {
+                        // Traiter les informations IP séparément
+                        systemInfoContainer.innerHTML += `<h3>${key}</h3>`;
+                        const ipKeys = Object.keys(value);
+                        ipKeys.forEach(ipKey => {
+                            systemInfoContainer.innerHTML += `<p><strong>${ipKey}</strong>: ${value[ipKey]}</p>`;
+                        });
+                    } else {
+                        // Afficher les autres informations système
+                        systemInfoContainer.innerHTML += `<p><strong>${key}</strong>: ${value}</p>`;
+                    }
+                });
+            }
+
+            // Appeler la fonction pour afficher les informations système
+            displaySystemInfo();
+        });
+    </script>
 </body>
 </html>
