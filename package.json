@@ -10,6 +10,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "electron": "^31.1.0"
+    "electron": "^31.1.0",
+    "network": "^0.7.0",
+    "network-info": "^2.0.7",
+    "os": "^0.1.2"
   }
 }
