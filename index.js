@@ -1,9 +1,11 @@
 const { app, BrowserWindow, Menu, shell } = require('electron');
 const path = require('path');
 
+let loadingWindow; // Déclaration de loadingWindow dans la portée globale
+
 // Fonction pour créer la fenêtre de chargement
 function createLoadingWindow() {
-    const loadingWin = new BrowserWindow({
+    loadingWindow = new BrowserWindow({
         width: 300,
         height: 300,
         frame: false,
@@ -11,13 +13,12 @@ function createLoadingWindow() {
         alwaysOnTop: true,
         icon: path.join(__dirname, 'assets', 'icon.ico'),
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            contextIsolation: false
         }
     });
 
-    loadingWin.loadFile('loading.html');
-
-    return loadingWin;
+    loadingWindow.loadFile('loading.html');
 }
 
 // Fonction pour créer la fenêtre principale
@@ -29,30 +30,23 @@ function createMainWindow() {
         minHeight: 700,
         icon: path.join(__dirname, 'assets', 'icon.ico'),
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            contextIsolation: false
         },
         show: false
     });
 
-    mainWindow.loadFile('index.html');
+    mainWindow.loadURL('https://nintenleak.fr'); // Charger nintenleak.fr comme page d'accueil
 
     mainWindow.once('ready-to-show', () => {
         setTimeout(() => {
             mainWindow.show();
             if (loadingWindow) {
                 loadingWindow.close();
+                loadingWindow = null;
             }
         }, 3000);
     });
-
-    return mainWindow;
-}
-
-let loadingWindow;
-
-app.on('ready', () => {
-    loadingWindow = createLoadingWindow();
-    const mainWindow = createMainWindow();
 
     // Définition du menu personnalisé pour la fenêtre principale
     const template = [
@@ -61,7 +55,7 @@ app.on('ready', () => {
             submenu: [
                 {
                     label: 'Home',
-                    click: () => { mainWindow.loadFile('index.html'); }
+                    click: () => { mainWindow.loadURL('https://nintenleak.fr'); } // Ouvrir nintenleak.fr dans la fenêtre principale
                 },
                 {
                     label: 'Discord',
@@ -73,9 +67,33 @@ app.on('ready', () => {
                     role: 'quit'
                 }
             ]
+        },
+        {
+            label: 'Help',
+            submenu: [
+                {
+                    label: 'Aide',
+                    click: () => { shell.openExternal('https://discord.gg/PkYbaCzs5J'); }
+                }
+            ]
         }
     ];
 
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
+
+    return mainWindow;
+}
+
+app.whenReady().then(() => {
+    createLoadingWindow();
+    createMainWindow();
+
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    });
+});
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit();
 });
