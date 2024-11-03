@@ -55,11 +55,17 @@ function createMainWindow() {
             submenu: [
                 {
                     label: 'Home',
-                    click: () => { mainWindow.loadURL('https://nintenleak.fr'); } // Ouvrir nintenleak.fr dans la fenêtre principale
+                    click: () => { mainWindow.loadURL('https://nintenleak.fr'); }
                 },
                 {
                     label: 'Discord',
-                    click: () => { shell.openExternal('https://discord.gg/PkYbaCzs5J'); }
+                    click: () => {
+                        // Essayer d'ouvrir Discord avec le protocole discord://
+                        shell.openExternal('discord://discord.gg/PkYbaCzs5J').catch(() => {
+                            // Si Discord n'est pas installé, ouvrir dans le navigateur
+                            shell.openExternal('https://discord.gg/PkYbaCzs5J');
+                        });
+                    }
                 },
                 { type: 'separator' },
                 {
@@ -73,7 +79,7 @@ function createMainWindow() {
             submenu: [
                 {
                     label: 'Aide',
-                    click: () => { shell.openExternal('https://discord.gg/PkYbaCzs5J'); }
+                    click: () => { shell.openExternal('https://discord.gg/RW25XPPf'); }
                 }
             ]
         }
